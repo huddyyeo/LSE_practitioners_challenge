@@ -23,10 +23,10 @@ def roll_corr(x,y,length=5):
   corr=[]
   x_len=len(x)
   if (x_len!=len(y)):
-    print("length of dataset do not match")
+    raise ValueError('Length of datasets do not match')
     return
   if (length>x_len):
-    print("length of rolling window exceeds data")
+    raise ValueError('Length of rolling window exceeds data')
     return
   for i in range(x_len):
     if (i+length>=x_len):
@@ -36,35 +36,64 @@ def roll_corr(x,y,length=5):
   return corr
 
 '''
-Class for creating a data environment. Input a vector of urls and the data is imported, cleaned and stored in the class.
+Class for creating a data environment. Input a list of urls, list of date type and list of date formats
+List of url refers to a list of the urls of the raw data
+List of data type should be comprised of 0 and 1s and should correspond to each url. 0 refers to equities data, 1 refers to other data
+Equity data should have Date, High and Low columns
+Other data should have Date and Value columns
+List of date formats refers to the formats of the data in the Date column. 
+If not necessary, please enter a ''. Otherwise enter the date format. This is the same as strptime format codes
+
+Upon execution, the data is imported, cleaned and stored in the class.
 '''
 class data_environment(object):
-  def __init__(self,url_list):
+  def __init__(self,url_list,data_type,date_format):
+
+    self.check_inputs(url_list,data_type,date_format)
     self.init_data(url_list) 
     self.preprocess_data()
 
-  def init_data(self,url_list): #initialise data
+  def check_inputs(self,url_list,data_type,date_format): 
+    if (len(url_list)!=len(data_type) or len(url_list)!=len(date_format)):
+      raise ValueError('Diff lengths of url and data type obtained')
+    temp=data_type.copy()
+    temp=list(dict.fromkeys(temp))
+    temp.sort()
+    if (any(i!=0 and i!=1 for i in temp)):
+      raise ValueError('Invalid data type input')  
+    self.data_type=data_type
+    self.date_format=date_format
+            
+  def init_data(self,url_list): 
     self.raw_data=[]
-    for url in url_list:
-      self.raw_data.append(pd.read_csv(url))  
+    for i in range(len(url_list)):
+      self.raw_data.append(pd.read_csv(url_list[i]))  
 
-  def get_daily_price(self,data): #gets average of High and Low
+  def get_daily_price(self,data): 
     return data.loc[:,['High','Low']].mean(axis=1).values
 
-  def get_logr(self,data): #calculates 1 day log returns
+  def get_logr(self,data):
     returns=data[1:]/data[:-1]
     return pd.Series(np.log(returns)).rename('Log-return')
 
-  def get_datetime(self,data): #returns Date column as a datetime column
-    date=pd.to_datetime(data.Date)
+  def get_datetime(self,data,i):
+    if i=='':
+      date=pd.to_datetime(data.Date)
+    else:
+      date=pd.to_datetime(data.Date,format=self.date_format[i],exact=False)
     return date     
 
-  def preprocess_data(self): #run all preprocessing and cleaning
+  def preprocess_data(self): 
     self.data=[]
     for i in range(len(self.raw_data)):
-      date=self.get_datetime(self.raw_data[i])
-      logr=self.get_logr(self.get_daily_price(self.raw_data[i]))
-      self.data.append(pd.concat([date,logr],axis=1))
+      if (self.data_type[i]==0):
+        date=self.get_datetime(self.raw_data[i],i)
+        logr=self.get_logr(self.get_daily_price(self.raw_data[i]))
+        self.data.append(pd.concat([date,logr],axis=1))
+      else:
+        date=self.get_datetime(self.raw_data[i],i)
+        logr=self.get_logr(self.raw_data[i].loc[:,'Value'].values)
+        self.data.append(pd.concat([date,logr],axis=1))
 
 '''
 Function that takes in data environment and merges 2 time series, can be potentially extended
@@ -80,9 +109,9 @@ Run rolling correlation windows, from length 4 to 200(1 year)
 From the correlation data calculated, obtain first 4 central moments 
 '''
 
-def test_lengths(df):
+def test_lengths(df,max_length=201):
   corr_data=pd.DataFrame(columns=['window_length','mean','var','skew','kurtosis'])
-  for i in range(4,201):
+  for i in range(4,max_length):
     values=roll_corr(df.loc[:,'Log-return_x'].values,df.loc[:,'Log-return_y'].values,i)
     entry_dict={'window_length':i,
                 'mean':np.mean(values),
