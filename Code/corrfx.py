@@ -13,6 +13,7 @@ from scipy.stats import pearsonr
 from scipy.stats import skew
 from scipy.stats import kurtosis
 import pandas as pd
+from google.colab import files
 
 '''
 This function takes two time series and applies a rolling window, calculating the correlation for each window. 
@@ -67,7 +68,9 @@ class data_environment(object):
   def init_data(self,url_list): 
     self.raw_data=[]
     for i in range(len(url_list)):
-      self.raw_data.append(pd.read_csv(url_list[i]))  
+      temp=pd.read_csv(url_list[i]).dropna()
+      temp=temp.reset_index()
+      self.raw_data.append(temp)  
 
   def get_daily_price(self,data): 
     return data.loc[:,['High','Low']].mean(axis=1).values
@@ -94,6 +97,13 @@ class data_environment(object):
         date=self.get_datetime(self.raw_data[i],i)
         logr=self.get_logr(self.raw_data[i].loc[:,'Value'].values)
         self.data.append(pd.concat([date,logr],axis=1))
+
+  def merge_download_all(self,join_style='outer'):
+    temp=self.data[0]
+    for i in range(1,len(self.data)):
+      temp=pd.merge(temp,self.data[i],on='Date',how=join_style,sort=True)
+    temp.to_csv('data.csv')
+    files.download('data.csv')
 
 '''
 Function that takes in data environment and merges 2 time series, can be potentially extended
