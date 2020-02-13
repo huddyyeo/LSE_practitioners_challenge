@@ -90,13 +90,44 @@ class data_environment(object):
     self.data=[]
     for i in range(len(self.raw_data)):
       if (self.data_type[i]==0):
-        date=self.get_datetime(self.raw_data[i],i)
+        
+        self.raw_data[i].Date=self.get_datetime(self.raw_data[i],i)
+        self.raw_data[i]=self.raw_data[i].sort_values(by='Date',ascending=True)
+        self.raw_data[i]=self.raw_data[i].reset_index()
         logr=self.get_logr(self.get_daily_price(self.raw_data[i]))
-        self.data.append(pd.concat([date,logr],axis=1))
+        self.data.append(pd.concat([self.raw_data[i].Date,logr],axis=1))
       else:
-        date=self.get_datetime(self.raw_data[i],i)
+        self.raw_data[i].Date=self.get_datetime(self.raw_data[i],i)
+        self.raw_data[i]=self.raw_data[i].sort_values(by='Date',ascending=True)  
+        self.raw_data[i]=self.raw_data[i].reset_index()      
+        self.raw_data[i]=self.raw_data[i].loc[:,['Date','Value']]
         logr=self.get_logr(self.raw_data[i].loc[:,'Value'].values)
-        self.data.append(pd.concat([date,logr],axis=1))
+        self.data.append(pd.concat([self.raw_data[i].Date,logr],axis=1))
+
+  def resample(self,frequency='M',dataset=0,interpolate_method='linear'):
+    temp=self.data[dataset].set_index('Date')
+    temp=temp.resample('D').interpolate(method=interpolate_method)
+    return temp.resample(frequency).asfreq()
+
+  def resample_download(self,frequency='M',dataset=0,interpolate_method='linear'):
+    temp=self.data[dataset].set_index('Date')
+    temp=temp.resample('D').interpolate(method=interpolate_method)
+    temp=temp.resample(frequency).asfreq()
+    temp.to_csv('data.csv')
+    files.download('data.csv')
+  
+  def resample_download_all(self,frequency='M',interpolate_method='linear',join_style='outer'):
+    temp=[]
+    for i in range(len(self.data)):
+      x=self.data[i].set_index('Date')
+      x=x.resample('D').interpolate(method=interpolate_method)
+      temp.append(x)
+    file=temp[0]
+    for i in range(1,len(temp)):
+      file=pd.merge(file,temp[i],on='Date',how=join_style,sort=True)
+    file=file.resample(frequency).asfreq()
+    file.to_csv('data.csv')
+    files.download('data.csv')  
 
   def merge_download_all(self,join_style='outer'):
     temp=self.data[0]
