@@ -80,7 +80,7 @@ class data_environment(object):
     return pd.Series(np.log(returns)).rename('Log-return')
 
   def get_datetime(self,data,i):
-    if i=='':
+    if self.date_format[i]=='':
       date=pd.to_datetime(data.Date)
     else:
       date=pd.to_datetime(data.Date,format=self.date_format[i],exact=False)
@@ -128,6 +128,18 @@ class data_environment(object):
     file=file.resample(frequency).asfreq()
     file.to_csv('data.csv')
     files.download('data.csv')  
+
+  def resample_all(self,frequency='M',interpolate_method='linear',join_style='outer'):
+    temp=[]
+    for i in range(len(self.data)):
+      x=self.data[i].set_index('Date')
+      x=x.resample('D').interpolate(method=interpolate_method)
+      temp.append(x)
+    file=temp[0]
+    for i in range(1,len(temp)):
+      file=pd.merge(file,temp[i],on='Date',how=join_style,sort=True)
+    file=file.resample(frequency).asfreq()
+    return file   
 
   def merge_download_all(self,join_style='outer'):
     temp=self.data[0]
