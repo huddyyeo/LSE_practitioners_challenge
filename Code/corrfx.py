@@ -48,8 +48,9 @@ If not necessary, please enter a ''. Otherwise enter the date format. This is th
 Upon execution, the data is imported, cleaned and stored in the class.
 '''
 class data_environment(object):
-  def __init__(self,url_list,data_type,date_format):
-
+  def __init__(self,main,url_list,data_type,date_format):
+    for i in range(len(url_list)):
+      url_list[i] = main+url_list[i]
     self.check_inputs(url_list,data_type,date_format)
     self.init_data(url_list) 
     self.preprocess_data()
