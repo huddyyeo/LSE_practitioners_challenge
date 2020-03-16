@@ -1,7 +1,8 @@
 # LSE Statistics Department Practitioners Challenge 2020
 
 Identifying risk factors and forecasting their correlations
-Results are in 'Final_Report.pdf'
+
+Final results are in 'Final_Report.pdf'
 
 ## Directories
 
