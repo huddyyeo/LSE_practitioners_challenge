@@ -1,6 +1,7 @@
 # LSE Statistics Department Practitioners Challenge 2020
 
 Identifying risk factors and forecasting their correlations
+Results are in 'Final_Report.pdf'
 
 ## Directories
 
@@ -39,7 +40,7 @@ Dynamic Conditional Correlation Representation.pdf
 │   └── _LCP Solvency II report 2019.pdf
 ├── README.md
 └── Writeups
-    ├── Final Report.pdf
+    ├── Final_Report.pdf
     └── Working Reports
         ├── Practitioners challenge (PC) : risk factors.pdf
         ├── Risk Factors final choice (AutoRecovered).docx
