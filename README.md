@@ -39,10 +39,8 @@ Dynamic Conditional Correlation Representation.pdf
 │   └── _LCP Solvency II report 2019.pdf
 ├── README.md
 └── Writeups
-    ├── Practitioners challenge (PC) : risk factors.pdf
-    ├── Risk Factors final choice (AutoRecovered).docx
-    └── Risk Factors final.pdf
-
-
-
-## Depends
+    ├── Final Report.pdf
+    └── Working Reports
+        ├── Practitioners challenge (PC) : risk factors.pdf
+        ├── Risk Factors final choice (AutoRecovered).docx
+        └── Risk Factors final.pdf

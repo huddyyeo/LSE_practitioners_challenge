@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1wOrUZeFF6QaTrSYxi4h5ZfmQS0GPg1JW
 """
 
-#lib of functions to be imported
+# lib of functions to be imported
 import numpy as np
 from scipy.stats import pearsonr
 from scipy.stats import skew
@@ -15,28 +15,30 @@ from scipy.stats import kurtosis
 import pandas as pd
 from google.colab import files
 
-'''
+"""
 This function takes two time series and applies a rolling window, calculating the correlation for each window. 
 It returns a vector of correlation values
-'''
+"""
 
-def roll_corr(x,y,length=5):
-  corr=[]
-  x_len=len(x)
-  if (x_len!=len(y)):
-    raise ValueError('Length of datasets do not match')
-    return
-  if (length>x_len):
-    raise ValueError('Length of rolling window exceeds data')
-    return
-  for i in range(x_len):
-    if (i+length>=x_len):
-      break
-    temp=pearsonr(x[i:i+length],y[i:i+length])[0]
-    corr.append(temp)
-  return corr
 
-'''
+def roll_corr(x, y, length=5):
+    corr = []
+    x_len = len(x)
+    if x_len != len(y):
+        raise ValueError("Length of datasets do not match")
+        return
+    if length > x_len:
+        raise ValueError("Length of rolling window exceeds data")
+        return
+    for i in range(x_len):
+        if i + length >= x_len:
+            break
+        temp = pearsonr(x[i : i + length], y[i : i + length])[0]
+        corr.append(temp)
+    return corr
+
+
+"""
 Class for creating a data environment. Input a list of urls, list of date type and list of date formats
 List of url refers to a list of the urls of the raw data
 List of data type should be comprised of 0 and 1s and should correspond to each url. 0 refers to equities data, 1 refers to other data
@@ -46,131 +48,151 @@ List of date formats refers to the formats of the data in the Date column.
 If not necessary, please enter a ''. Otherwise enter the date format. This is the same as strptime format codes
 
 Upon execution, the data is imported, cleaned and stored in the class.
-'''
+"""
+
+
 class data_environment(object):
-  def __init__(self,main,url_list,data_type,date_format):
-    for i in range(len(url_list)):
-      url_list[i] = main+url_list[i]
-    self.check_inputs(url_list,data_type,date_format)
-    self.init_data(url_list) 
-    self.preprocess_data()
+    def __init__(self, main, url_list, data_type, date_format):
+        for i in range(len(url_list)):
+            url_list[i] = main + url_list[i]
+        self.check_inputs(url_list, data_type, date_format)
+        self.init_data(url_list)
+        self.preprocess_data()
 
-  def check_inputs(self,url_list,data_type,date_format): 
-    if (len(url_list)!=len(data_type) or len(url_list)!=len(date_format)):
-      raise ValueError('Diff lengths of url and data type obtained')
-    temp=data_type.copy()
-    temp=list(dict.fromkeys(temp))
-    temp.sort()
-    if (any(i!=0 and i!=1 for i in temp)):
-      raise ValueError('Invalid data type input')  
-    self.data_type=data_type
-    self.date_format=date_format
-            
-  def init_data(self,url_list): 
-    self.raw_data=[]
-    for i in range(len(url_list)):
-      temp=pd.read_csv(url_list[i]).dropna()
-      temp=temp.reset_index()
-      self.raw_data.append(temp)  
+    def check_inputs(self, url_list, data_type, date_format):
+        if len(url_list) != len(data_type) or len(url_list) != len(date_format):
+            raise ValueError("Diff lengths of url and data type obtained")
+        temp = data_type.copy()
+        temp = list(dict.fromkeys(temp))
+        temp.sort()
+        if any(i != 0 and i != 1 for i in temp):
+            raise ValueError("Invalid data type input")
+        self.data_type = data_type
+        self.date_format = date_format
 
-  def get_daily_price(self,data): 
-    return data.loc[:,['High','Low']].mean(axis=1).values
+    def init_data(self, url_list):
+        self.raw_data = []
+        for i in range(len(url_list)):
+            temp = pd.read_csv(url_list[i]).dropna()
+            temp = temp.reset_index()
+            self.raw_data.append(temp)
 
-  def get_logr(self,data):
-    returns=data[1:]/data[:-1]
-    return pd.Series(np.log(returns)).rename('Log-return')
+    def get_daily_price(self, data):
+        return data.loc[:, ["High", "Low"]].mean(axis=1).values
 
-  def get_datetime(self,data,i):
-    if self.date_format[i]=='':
-      date=pd.to_datetime(data.Date)
-    else:
-      date=pd.to_datetime(data.Date,format=self.date_format[i],exact=False)
-    return date     
+    def get_logr(self, data):
+        returns = data[1:] / data[:-1]
+        return pd.Series(np.log(returns)).rename("Log-return")
 
-  def preprocess_data(self): 
-    self.data=[]
-    for i in range(len(self.raw_data)):
-      if (self.data_type[i]==0):
-        
-        self.raw_data[i].Date=self.get_datetime(self.raw_data[i],i)
-        self.raw_data[i]=self.raw_data[i].sort_values(by='Date',ascending=True)
-        self.raw_data[i]=self.raw_data[i].reset_index()
-        logr=self.get_logr(self.get_daily_price(self.raw_data[i]))
-        self.data.append(pd.concat([self.raw_data[i].Date,logr],axis=1))
-      else:
-        self.raw_data[i].Date=self.get_datetime(self.raw_data[i],i)
-        self.raw_data[i]=self.raw_data[i].sort_values(by='Date',ascending=True)  
-        self.raw_data[i]=self.raw_data[i].reset_index()      
-        self.raw_data[i]=self.raw_data[i].loc[:,['Date','Value']]
-        logr=self.get_logr(self.raw_data[i].loc[:,'Value'].values)
-        self.data.append(pd.concat([self.raw_data[i].Date,logr],axis=1))
+    def get_datetime(self, data, i):
+        if self.date_format[i] == "":
+            date = pd.to_datetime(data.Date)
+        else:
+            date = pd.to_datetime(data.Date, format=self.date_format[i], exact=False)
+        return date
 
-  def resample(self,frequency='M',dataset=0,interpolate_method='linear'):
-    temp=self.data[dataset].set_index('Date')
-    temp=temp.resample('D').interpolate(method=interpolate_method)
-    return temp.resample(frequency).asfreq()
+    def preprocess_data(self):
+        self.data = []
+        for i in range(len(self.raw_data)):
+            if self.data_type[i] == 0:
 
-  def resample_download(self,frequency='M',dataset=0,interpolate_method='linear'):
-    temp=self.data[dataset].set_index('Date')
-    temp=temp.resample('D').interpolate(method=interpolate_method)
-    temp=temp.resample(frequency).asfreq()
-    temp.to_csv('data.csv')
-    files.download('data.csv')
-  
-  def resample_download_all(self,frequency='M',interpolate_method='linear',join_style='outer'):
-    temp=[]
-    for i in range(len(self.data)):
-      x=self.data[i].set_index('Date')
-      x=x.resample('D').interpolate(method=interpolate_method)
-      temp.append(x)
-    file=temp[0]
-    for i in range(1,len(temp)):
-      file=pd.merge(file,temp[i],on='Date',how=join_style,sort=True)
-    file=file.resample(frequency).asfreq()
-    file.to_csv('data.csv')
-    files.download('data.csv')  
+                self.raw_data[i].Date = self.get_datetime(self.raw_data[i], i)
+                self.raw_data[i] = self.raw_data[i].sort_values(
+                    by="Date", ascending=True
+                )
+                self.raw_data[i] = self.raw_data[i].reset_index()
+                logr = self.get_logr(self.get_daily_price(self.raw_data[i]))
+                self.data.append(pd.concat([self.raw_data[i].Date, logr], axis=1))
+            else:
+                self.raw_data[i].Date = self.get_datetime(self.raw_data[i], i)
+                self.raw_data[i] = self.raw_data[i].sort_values(
+                    by="Date", ascending=True
+                )
+                self.raw_data[i] = self.raw_data[i].reset_index()
+                self.raw_data[i] = self.raw_data[i].loc[:, ["Date", "Value"]]
+                logr = self.get_logr(self.raw_data[i].loc[:, "Value"].values)
+                self.data.append(pd.concat([self.raw_data[i].Date, logr], axis=1))
 
-  def resample_all(self,frequency='M',interpolate_method='linear',join_style='outer'):
-    temp=[]
-    for i in range(len(self.data)):
-      x=self.data[i].set_index('Date')
-      x=x.resample('D').interpolate(method=interpolate_method)
-      temp.append(x)
-    file=temp[0]
-    for i in range(1,len(temp)):
-      file=pd.merge(file,temp[i],on='Date',how=join_style,sort=True)
-    file=file.resample(frequency).asfreq()
-    return file   
+    def resample(self, frequency="M", dataset=0, interpolate_method="linear"):
+        temp = self.data[dataset].set_index("Date")
+        temp = temp.resample("D").interpolate(method=interpolate_method)
+        return temp.resample(frequency).asfreq()
 
-  def merge_download_all(self,join_style='outer'):
-    temp=self.data[0]
-    for i in range(1,len(self.data)):
-      temp=pd.merge(temp,self.data[i],on='Date',how=join_style,sort=True)
-    temp.to_csv('data.csv')
-    files.download('data.csv')
+    def resample_download(self, frequency="M", dataset=0, interpolate_method="linear"):
+        temp = self.data[dataset].set_index("Date")
+        temp = temp.resample("D").interpolate(method=interpolate_method)
+        temp = temp.resample(frequency).asfreq()
+        temp.to_csv("data.csv")
+        files.download("data.csv")
 
-'''
+    def resample_download_all(
+        self, frequency="M", interpolate_method="linear", join_style="outer"
+    ):
+        temp = []
+        for i in range(len(self.data)):
+            x = self.data[i].set_index("Date")
+            x = x.resample("D").interpolate(method=interpolate_method)
+            temp.append(x)
+        file = temp[0]
+        for i in range(1, len(temp)):
+            file = pd.merge(file, temp[i], on="Date", how=join_style, sort=True)
+        file = file.resample(frequency).asfreq()
+        file.to_csv("data.csv")
+        files.download("data.csv")
+
+    def resample_all(
+        self, frequency="M", interpolate_method="linear", join_style="outer"
+    ):
+        temp = []
+        for i in range(len(self.data)):
+            x = self.data[i].set_index("Date")
+            x = x.resample("D").interpolate(method=interpolate_method)
+            temp.append(x)
+        file = temp[0]
+        for i in range(1, len(temp)):
+            file = pd.merge(file, temp[i], on="Date", how=join_style, sort=True)
+        file = file.resample(frequency).asfreq()
+        return file
+
+    def merge_download_all(self, join_style="outer"):
+        temp = self.data[0]
+        for i in range(1, len(self.data)):
+            temp = pd.merge(temp, self.data[i], on="Date", how=join_style, sort=True)
+        temp.to_csv("data.csv")
+        files.download("data.csv")
+
+
+"""
 Function that takes in data environment and merges 2 time series, can be potentially extended
-'''
+"""
 
-def merge(data_env,i=0,j=1):
-  df=pd.merge(data_env.data[i],data_env.data[j],on='Date',how='inner')
-  df=df.dropna()
-  return df
 
-'''
+def merge(data_env, i=0, j=1):
+    df = pd.merge(data_env.data[i], data_env.data[j], on="Date", how="inner")
+    df = df.dropna()
+    return df
+
+
+"""
 Run rolling correlation windows, from length 4 to 200(1 year)
 From the correlation data calculated, obtain first 4 central moments 
-'''
+"""
 
-def test_lengths(df,max_length=201):
-  corr_data=pd.DataFrame(columns=['window_length','mean','var','skew','kurtosis'])
-  for i in range(4,max_length):
-    values=roll_corr(df.loc[:,'Log-return_x'].values,df.loc[:,'Log-return_y'].values,i)
-    entry_dict={'window_length':i,
-                'mean':np.mean(values),
-                'var':np.var(values),
-                'skew':skew(values),
-                'kurtosis':kurtosis(values)}
-    corr_data=corr_data.append(entry_dict,ignore_index=True)
-  return corr_data
+
+def test_lengths(df, max_length=201):
+    corr_data = pd.DataFrame(
+        columns=["window_length", "mean", "var", "skew", "kurtosis"]
+    )
+    for i in range(4, max_length):
+        values = roll_corr(
+            df.loc[:, "Log-return_x"].values, df.loc[:, "Log-return_y"].values, i
+        )
+        entry_dict = {
+            "window_length": i,
+            "mean": np.mean(values),
+            "var": np.var(values),
+            "skew": skew(values),
+            "kurtosis": kurtosis(values),
+        }
+        corr_data = corr_data.append(entry_dict, ignore_index=True)
+    return corr_data
