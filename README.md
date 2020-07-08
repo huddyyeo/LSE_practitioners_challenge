@@ -1,8 +1,19 @@
 # LSE Statistics Department Practitioners Challenge 2020
 
-Identifying risk factors and forecasting their correlations
+This is the GitHub repository for a research project on establishing a robust methodology to forecast the correlations between the risk factors most likely to impact Aviva UK’s balance sheet over a 1-year period. This project was hosted by the London School of Economics and Political Science's Department of Statistics, in collaboration with Aviva UK.
 
-Final results are in 'Final_Report.pdf'
+We identified a total of five risk factors which we sought to model, namely interest rates, the yield on high-quality corporate bonds, the risk-free rate, inflation, and Gross Domestic Product (GDP). In addition, two statistical models were used to forecast rolling correlations among pairs of risk factors: 1) an ARMA model based on a rolling window, and 2) the DCC-GARCH model. We found the DCC-GARCH model to be the superior method to forecast these correlations.
+
+Team members:
+Hudson Yeo
+Jeria Kua
+Nicholas Hutter
+Gábor Ratkovics
+Zain Hussein
+
+Awarded Overall Champion of the Challenge.
+
+The final results are in 'Final_Report.pdf'
 
 ## Directories
 
