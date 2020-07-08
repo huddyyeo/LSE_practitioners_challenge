@@ -4,11 +4,11 @@ This is the GitHub repository for a research project on establishing a robust me
 
 We identified a total of five risk factors which we sought to model, namely interest rates, the yield on high-quality corporate bonds, the risk-free rate, inflation, and Gross Domestic Product (GDP). In addition, two statistical models were used to forecast rolling correlations among pairs of risk factors: 1) an ARMA model based on a rolling window, and 2) the DCC-GARCH model. We found the DCC-GARCH model to be the superior method to forecast these correlations.
 
+The final results are in 'Final_Report.pdf'
+
 Team members: Hudson Yeo, Jeria Kua, Nicholas Hutter, Gábor Ratkovics, Zain Hussein
 
 Awarded Overall Champion of the Challenge.
-
-The final results are in 'Final_Report.pdf'
 
 ## Directories
 
