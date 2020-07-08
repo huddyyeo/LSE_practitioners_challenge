@@ -38,11 +38,8 @@ LSE Practitioners Challenge
 │   ├── Dynamic Conditional Correlation.pdf
 │   ├── GARCC paper.pdf
 │   ├── Giovannini2006_Article_ConditionalCorrelationsInTheRe.pdf
-│   ├── PwC Solvency II
-Capital Model
-Survey.pdf
-│   ├── Ten Things You Should Know About the
-Dynamic Conditional Correlation Representation.pdf
+│   ├── PwC Solvency II Capital Model Survey.pdf
+│   ├── Ten Things You Should Know About the Dynamic Conditional Correlation Representation.pdf
 │   ├── Time Series Analysis.djvu
 │   └── _LCP Solvency II report 2019.pdf
 ├── README.md
